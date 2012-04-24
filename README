@@ -6,35 +6,16 @@ Additions and utilities to augment the Foundation framework created by Jayway.
 This project is created with the intent to be used as a sub-project for other
 Xcode project.
 
-This project has a dependency to CWFoundation. This dependency in added as
-a relative sub-project at ../CWFoundation. You can clone this repo yourself
-or it will be cloned for you when building through the CWUIKitEnsureDeps target.
-
-CWUIKit is weakly linked agains CWFoundation in order to avoid duplicate 
-symbols if CWUIKit is used with other project that also have dependencies to 
-CWFoundation. The result of this is that any project that links against CWUIKit
-must also link against CWFoundation explicitly.
-
-CWUIKit have two targets, a static library CWUIKit that you link against, and
-CWUIKitResources that produces a bundle with resources that you copy.
-
 You add this project as a sub project in Xcode like this:
 1. Add this project as a sub project to your project.
 2. Make sure this project product (libCWUIKit.a) is a target member.
-3. Make sure the subprojects product (libCWFoundation.a) is a target member.
-4. Add the CWUIKit target as direct dependency.
-5. Add ../** to user header search paths.
-6. Add -all_load to other linker flags.
-7. Add CWUIKitResources to Copy Bundle Resource build phase.
-
-You can use CalloutViewSampleApp target as a template for how to use CWUIKit.
+3. Add the CWUIKit target as direct dependency.
+4. Add ../** to user header search paths.
+5. Add -all_load to other linker flags.
 
 You must link against:
-* Foundation.framework
 * UIKit.framework
 * CoreGraphics.framework
-* QuartzCore.framework
-* OpenGLES.framework
 
 
 Functionality
@@ -43,21 +24,8 @@ Functionality
 The public headerfiles are the official source of documentation. This section
 only describes a subset of the main funcationality.
 
-* CWAuxiliaryActions - Use blocks as callbacks for UIAlertView & UIActionSheet.
-* CWCalendarView - A view visually like the iPhone Calendar app.
-* CWCalloutView - Configurable callout view like in MapKit.
 * CWColumnTableView - Like UITableView with multiple columns
 * CWTableViewBackgroundCell - Configurabe background and highlight for cells.
-* CWLinearLayout - Rule based linear layout, when springs&struts comes short.
-* CWNibLocalization - Prefix text with @ in IB gets localized from strings. To
-   use, you will have to call [self.view localizeFromNib]; from viewDidLoad in
-   your view controllers.
-* CWViewSheet - A helper class for presenting views like a sheet.
-* UIAlertView - Conviniece additions to construct from NSError instances.
-* UIColor - Additions for extracting components, and accessing standard colors.
-* UIDevice - Conviniece additions for quering for availible capabilities.
-* UIImage - Additions for resizing and normalizing images.
-* UIView - Additions for animating a visual move cue.
 
 
 Licence
