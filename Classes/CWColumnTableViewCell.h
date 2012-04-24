@@ -4,6 +4,7 @@
 //  Created by Fredrik Olsson 
 //
 //  Copyright (c) 2011, Jayway AB All rights reserved.
+//  Copyright (c) 2012, Fredrik Olsson All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are met:
@@ -39,40 +40,20 @@
  *             table view configured with a single column is indistinguishable from a 
  *             UITableViewCell.
  */
-@interface CWColumnTableViewCell : UIView {
-@private
-	UITableViewCellStyle _style;
-    UITableViewStyle _tableViewStyle;
-	UITableViewCellSeparatorStyle _separatorStyle;
-    UIColor* _separatorColor;
-    NSString* _reuseIdentified;
-    UIView* _contentView;
-    UIView* _backgroundView;
-    UIView* _selectedBackgroundView;
-    UILabel* _textLabel;
-    UIImageView* _imageView;
-    UILabel* _detailTextLabel;
-    UIView* _currentAccessoryView;
-    UIView* _accessoryView;
-    BOOL _selected;
-    BOOL _highlighted;
-    BOOL _editing;
-    BOOL _backgroundViewForcedNil;
-    BOOL _selectedBackgroundViewForcedNil;
-}
+@interface CWColumnTableViewCell : UIView 
 
 @property (nonatomic, readonly, assign) UITableViewCellStyle style;
 @property (nonatomic, assign) UITableViewStyle tableViewStyle;
 @property (nonatomic, assign) UITableViewCellSeparatorStyle separatorStyle;
-@property (nonatomic, retain) UIColor* separatorColor;
+@property (nonatomic, strong) UIColor* separatorColor;
 @property (nonatomic, readonly, copy) NSString* reuseIdentifier;
-@property (nonatomic, readonly, retain) UIView* contentView;
-@property (nonatomic, retain) UIView* backgroundView;
-@property (nonatomic, retain) UIView* selectedBackgroundView;
-@property (nonatomic, readonly, retain) UILabel* textLabel;
-@property (nonatomic, readonly, retain) UIImageView* imageView;
-@property (nonatomic, readonly, retain) UILabel* detailTextLabel;
-@property (nonatomic, retain) UIView* accessoryView;
+@property (nonatomic, readonly, strong) UIView* contentView;
+@property (nonatomic, strong) UIView* backgroundView;
+@property (nonatomic, strong) UIView* selectedBackgroundView;
+@property (nonatomic, readonly, strong) UILabel* textLabel;
+@property (nonatomic, readonly, strong) UIImageView* imageView;
+@property (nonatomic, readonly, strong) UILabel* detailTextLabel;
+@property (nonatomic, strong) UIView* accessoryView;
 @property (nonatomic, getter=isSelected, assign) BOOL selected;
 @property (nonatomic, getter=isHighlighted, assign) BOOL highlighted;
 @property (nonatomic, getter=isEditing, assign) BOOL editing;

@@ -4,6 +4,7 @@
 //  Created by Fredrik Olsson 
 //
 //  Copyright (c) 2011, Jayway AB All rights reserved.
+//  Copyright (c) 2012, Fredrik Olsson All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are met:
@@ -39,8 +40,27 @@
 
 @end
 
-@implementation CWColumnTableViewCell
-
+@implementation CWColumnTableViewCell {
+@private
+	UITableViewCellStyle _style;
+    UITableViewStyle _tableViewStyle;
+	UITableViewCellSeparatorStyle _separatorStyle;
+    UIColor* _separatorColor;
+    NSString* _reuseIdentified;
+    UIView* _contentView;
+    UIView* _backgroundView;
+    UIView* _selectedBackgroundView;
+    UILabel* _textLabel;
+    UIImageView* _imageView;
+    UILabel* _detailTextLabel;
+    UIView* _currentAccessoryView;
+    UIView* _accessoryView;
+    BOOL _selected;
+    BOOL _highlighted;
+    BOOL _editing;
+    BOOL _backgroundViewForcedNil;
+    BOOL _selectedBackgroundViewForcedNil;
+}
 
 #pragma mark --- Properties
 
@@ -66,8 +86,7 @@
         [self insertSubview:view atIndex:0];
     }
     [_backgroundView removeFromSuperview];
-    [_backgroundView autorelease];
-    _backgroundView = [view retain];
+    _backgroundView = view;
 }
 
 -(UIView*)backgroundView;
@@ -92,8 +111,7 @@
         [self insertSubview:view belowSubview:_contentView];
     }
     [_selectedBackgroundView removeFromSuperview];
-    [_selectedBackgroundView autorelease];
-    _selectedBackgroundView = [view retain];
+    _selectedBackgroundView = view;
 }
 
 -(UIView*)selectedBackgroundView;
@@ -177,13 +195,6 @@
     return self;
 }
 
-- (void)dealloc;
-{
-    [_backgroundView release];
-    [_selectedBackgroundView release];
-	[_reuseIdentified release];
-    [super dealloc];
-}
 
 #pragma mark --- Manage accessory view
 
@@ -201,8 +212,7 @@
 -(void)setAccessoryView:(UIView *)view;
 {
 	if (_accessoryView != view) {
-    	[_accessoryView autorelease];
-        _accessoryView = [view retain];
+        _accessoryView = view;
         [self setNeedsLayout];
     }
 }
@@ -311,7 +321,7 @@
 
 -(UILabel*)defaultTextLabel;
 {
-    UILabel* label = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
+    UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
     label.backgroundColor = [UIColor clearColor];
     label.textColor = [self textLabelTextColor];
     switch (self.style) {
@@ -329,13 +339,13 @@
 -(UIImageView*)defaultImageView;
 {
 	CGRect smallRect = CGRectMake(0, 0, 25, 25);
-	UIImageView* imageView = [[[UIImageView alloc] initWithFrame:smallRect] autorelease];
+	UIImageView* imageView = [[UIImageView alloc] initWithFrame:smallRect];
     return imageView;
 }
 
 -(UILabel*)defaultDetailTextLabel;
 {
-    UILabel* label = [[[UILabel alloc] initWithFrame:CGRectZero] autorelease];
+    UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
     label.backgroundColor = [UIColor clearColor];
     label.textColor = [self detailTextLabelTextColor];
     switch (self.style) {

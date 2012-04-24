@@ -4,6 +4,7 @@
 //  Created by Fredrik Olsson 
 //
 //  Copyright (c) 2011, Jayway AB All rights reserved.
+//  Copyright (c) 2012, Fredrik Olsson All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are met:
@@ -111,55 +112,7 @@
  *             mimic a UIKit table view as closely as possible. A CWColumnTableView table view 
  *             configured with a single column is indistinguishable from a a UITableView.
  */
-@interface CWColumnTableView : UIScrollView {
-@private
-    UITableViewStyle _style;
-	id<CWColumnTableViewDataSource> _dataSource;
-    NSInteger _numberOfColumns;
-    CGFloat _rowHeight;
-    CGFloat _minimumColumnWidth;
-    UITableViewCellSeparatorStyle _separatorStyle;
-    UIColor* _separatorColor;
-    NSInteger _numberOfPositions;
-    NSMutableDictionary* _resuseableCells;
-    NSMutableArray* _visibleCells;
-    NSInteger _firstVisibleCell;
-    NSInteger _lastVisibleCell;
-    NSInteger _selectedIndex;
-    NSInteger _highlightedIndex;
-    CGSize _lastSize;
-    NSInteger _lastFirstVisiblePosition;
-	NSInteger _lastLastVisiblePosition;
-    BOOL _didPerformLayoutSubviews;
-    UIEdgeInsets _overriddenContentInset;
-    NSIndexSet* _indexesToInsertedAnimatedAtLayout;
-    NSMutableIndexSet* _deferedReloadIndexes;
-    NSMutableIndexSet* _deferedDeleteIndexes;
-    NSMutableIndexSet* _deferedInsertIndexes;
-    NSInteger _updateCount;
-    BOOL _editing;
-    UITouch* _trackedTouch;
-    NSInteger _sourceIndexForMove;
-    NSInteger _destIndexForMove;
-    CGPoint _sourcePointForMove;
-    CGPoint _currentPointForMove;
-    CWColumnTableViewCell* _cellBeingMoved;
-	NSMutableArray* _backgroundRowViews;
-	NSInteger _minimumNumberOfRows;
-    UIView* _backgroundView;
-    UIImage* _tiledBackgroundImage;
-    struct {
-    	unsigned int delegateHasWillSelectPosition:1;
-    	unsigned int delegateHasDidSelectPosition:1;
-    	unsigned int delegateHasWillDeselectPosition:1;
-    	unsigned int delegateHasDidDeselectPosition:1;
-        unsigned int delegateHasTargetIndexForMove:1;
-        unsigned int delegateHasWillDisplayCell:1;
-    	unsigned int delegateHasBackgroundForRow:1;
-		unsigned int dataSourceHasCanMove:1;
-		unsigned int dataSourceHasMovePosition:1;
-    } _columnTableViewFlags;
-}
+@interface CWColumnTableView : UIScrollView
 
 /*!
  * @abstract The style of the column table view.
@@ -170,12 +123,12 @@
 /*!
  * @abstract The object that acts as the receivers data source.
  */
-@property (nonatomic, assign) IBOutlet id<CWColumnTableViewDataSource> dataSource;
+@property (nonatomic, weak) IBOutlet id<CWColumnTableViewDataSource> dataSource;
 
 /*!
  * @abstract The object that acts as the receivers delegate.
  */
-@property (nonatomic, assign) IBOutlet id<CWColumnTableViewDelegate> delegate;
+@property (nonatomic, weak) IBOutlet id<CWColumnTableViewDelegate> delegate;
 
 /*!
  * @abstract The number of columns to display.
@@ -218,7 +171,7 @@
  * @abstract The color of the lines separating the column table view cells.
  * @discussion Default is a light gray (67% white).
  */
-@property (nonatomic, retain) UIColor* separatorColor;
+@property (nonatomic, strong) UIColor* separatorColor;
 
 /*!
  * @abstract Determine whether the receiver is in editing mode.
@@ -241,13 +194,13 @@
 /*!
  * @abstract A static background view behind cells and row background views.
  */
-@property (nonatomic, retain) UIView* backgroundView;
+@property (nonatomic, strong) UIView* backgroundView;
 
 
 /*!
  * @abstract An image to tile and scroll behind contents
  */
-@property (nonatomic, retain) UIImage* tiledBackgroundImage;
+@property (nonatomic, strong) UIImage* tiledBackgroundImage;
 
 
 /*!

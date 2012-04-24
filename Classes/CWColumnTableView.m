@@ -4,6 +4,7 @@
 //  Created by Fredrik Olsson 
 //
 //  Copyright (c) 2011, Jayway AB All rights reserved.
+//  Copyright (c) 2012, Fredrik Olsson All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are met:
@@ -50,8 +51,55 @@
 @end
 
 
-@implementation CWColumnTableView
-
+@implementation CWColumnTableView {
+@private
+    UITableViewStyle _style;
+	__weak id<CWColumnTableViewDataSource> _dataSource;
+    NSInteger _numberOfColumns;
+    CGFloat _rowHeight;
+    CGFloat _minimumColumnWidth;
+    UITableViewCellSeparatorStyle _separatorStyle;
+    UIColor* _separatorColor;
+    NSInteger _numberOfPositions;
+    NSMutableDictionary* _resuseableCells;
+    NSMutableArray* _visibleCells;
+    NSInteger _firstVisibleCell;
+    NSInteger _lastVisibleCell;
+    NSInteger _selectedIndex;
+    NSInteger _highlightedIndex;
+    CGSize _lastSize;
+    NSInteger _lastFirstVisiblePosition;
+	NSInteger _lastLastVisiblePosition;
+    BOOL _didPerformLayoutSubviews;
+    UIEdgeInsets _overriddenContentInset;
+    NSIndexSet* _indexesToInsertedAnimatedAtLayout;
+    NSMutableIndexSet* _deferedReloadIndexes;
+    NSMutableIndexSet* _deferedDeleteIndexes;
+    NSMutableIndexSet* _deferedInsertIndexes;
+    NSInteger _updateCount;
+    BOOL _editing;
+    UITouch* _trackedTouch;
+    NSInteger _sourceIndexForMove;
+    NSInteger _destIndexForMove;
+    CGPoint _sourcePointForMove;
+    CGPoint _currentPointForMove;
+    CWColumnTableViewCell* _cellBeingMoved;
+	NSMutableArray* _backgroundRowViews;
+	NSInteger _minimumNumberOfRows;
+    UIView* _backgroundView;
+    UIImage* _tiledBackgroundImage;
+    struct {
+    	unsigned int delegateHasWillSelectPosition:1;
+    	unsigned int delegateHasDidSelectPosition:1;
+    	unsigned int delegateHasWillDeselectPosition:1;
+    	unsigned int delegateHasDidDeselectPosition:1;
+        unsigned int delegateHasTargetIndexForMove:1;
+        unsigned int delegateHasWillDisplayCell:1;
+    	unsigned int delegateHasBackgroundForRow:1;
+		unsigned int dataSourceHasCanMove:1;
+		unsigned int dataSourceHasMovePosition:1;
+    } _columnTableViewFlags;
+}
 
 #pragma mark --- Properties
 
@@ -174,10 +222,9 @@
 
 -(void)setTiledBackgroundImage:(UIImage *)image;
 {
-    [_tiledBackgroundImage release];
-    _tiledBackgroundImage = [image retain];
+    _tiledBackgroundImage = image;
 	if (image) {
-    	UIView* view = [[[UIView alloc] initWithFrame:CGRectMake(0, 0, 10, 10)] autorelease];
+    	UIView* view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 10, 10)];
         view.backgroundColor = [UIColor colorWithPatternImage:image];
         self.backgroundView = view;
     } else {
@@ -222,27 +269,6 @@
         [self setupDefaultValues];
     }
     return self;
-}
-
-- (void)dealloc {
-	if (_resuseableCells!=nil) {
-		[_resuseableCells release];
-		_resuseableCells = nil;
-	}
-	if (_visibleCells!=nil) {
-		[_visibleCells release];
-		_visibleCells = nil;
-	}
-	if (_indexesToInsertedAnimatedAtLayout!=nil) {
-		[_indexesToInsertedAnimatedAtLayout release];
-		_indexesToInsertedAnimatedAtLayout = nil;
-	}
-	if (_cellBeingMoved!=nil) {
-		[_cellBeingMoved release];
-		_cellBeingMoved = nil;
-	}
-    [_tiledBackgroundImage release];
-    [super dealloc];
 }
 
 #pragma mark --- Public methods
@@ -290,10 +316,18 @@
 		_backgroundRowViews = [[NSMutableArray alloc] initWithCapacity:2];
 	}
 	if (rowIndex < [_backgroundRowViews count]) {
-		return [_backgroundRowViews objectAtIndex:rowIndex];
+        UIView* rowBackgroundView = [_backgroundRowViews objectAtIndex:rowIndex];
+        if ([rowBackgroundView isKindOfClass:[NSNull class]]) {
+            return nil;
+        }
+		return rowBackgroundView;
 	} else if (_columnTableViewFlags.delegateHasBackgroundForRow) {
 		UIView* rowBackgroundView = [self.delegate columnTableView:self backgroundViewForRowAtIndex:rowIndex];
-		[_backgroundRowViews insertObject:rowBackgroundView atIndex:rowIndex];
+        if (rowBackgroundView) {
+            [_backgroundRowViews insertObject:rowBackgroundView atIndex:rowIndex];
+        } else {
+            [_backgroundRowViews insertObject:[NSNull null] atIndex:rowIndex];
+        }
 		return rowBackgroundView;
 	}
 	return nil;
@@ -352,7 +386,6 @@
 	NSMutableArray* cellsForIdentifier = [_resuseableCells objectForKey:identifier];
     id cell = [cellsForIdentifier lastObject];
     if (cell) {
-    	[[cell retain] autorelease];
 		[cellsForIdentifier removeLastObject];
 		if ([cellsForIdentifier count] == 0) {
 			[_resuseableCells removeObjectForKey:identifier];
@@ -377,11 +410,16 @@
     for (CWColumnTableViewCell* cell in _visibleCells) {
     	[self offerCellToReuseQueue:cell];
     }
-	[_visibleCells release];
     _visibleCells = nil;
     _lastFirstVisiblePosition = NSNotFound;
     _lastLastVisiblePosition = NSNotFound;
     _lastSize = CGSizeZero;
+    for (UIView *view in _backgroundRowViews) {
+        if ([view isKindOfClass:[UIView class]]) {
+            [view removeFromSuperview];
+        }
+    }
+    [_backgroundRowViews removeAllObjects];
     [self setNeedsLayout];
     [self setNeedsDisplay];
 }
@@ -438,7 +476,7 @@
 {
 	[self setHighlighted:NO forPositionAtIndex:_sourceIndexForMove];
     self.scrollEnabled = NO;
-	_cellBeingMoved = [[self cellForPositionAtIndex:_sourceIndexForMove] retain];
+	_cellBeingMoved = [self cellForPositionAtIndex:_sourceIndexForMove];
     [self bringSubviewToFront:_cellBeingMoved];
     
     [UIView beginAnimations:@"MoveBack" context:NULL];
@@ -463,7 +501,6 @@
     }
     [self setNeedsLayout];
     _lastSize = CGSizeZero;
-    [_cellBeingMoved release];
     _cellBeingMoved = nil;
 	_sourceIndexForMove = _destIndexForMove = NSNotFound;
     self.scrollEnabled = YES;
@@ -508,8 +545,9 @@
 		}					
 	}
 	
-	for (int index = minNumberOfRows; index < [_backgroundRowViews count]; index++) {
+	for (int index = [_backgroundRowViews count] - 1; index >= minNumberOfRows; index--) {
 		[[_backgroundRowViews objectAtIndex:index] removeFromSuperview];
+        [_backgroundRowViews removeObjectAtIndex:index];
 	}
 	
     BOOL shouldDoLayout = _cellBeingMoved != nil || firstVisiblePosition != _lastFirstVisiblePosition || lastVisiblePosition != _lastLastVisiblePosition || !CGSizeEqualToSize(_lastSize, size);
@@ -585,7 +623,6 @@
             }                
         }
     }
-    [_indexesToInsertedAnimatedAtLayout release];
     _indexesToInsertedAnimatedAtLayout = nil;
 }
 
@@ -595,7 +632,7 @@
 -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 {
     if (_trackedTouch == nil) {
-        _trackedTouch = [[touches anyObject] retain];
+        _trackedTouch = [touches anyObject];
         CGPoint point = [_trackedTouch locationInView:self];
         NSInteger position = [self positionIndexForCellAtPoint:point];
         _sourceIndexForMove = _destIndexForMove = [self sourceIndexForMoveAtIndex:position];
@@ -626,7 +663,6 @@
         }
         [self setHighlighted:NO forPositionAtIndex:_highlightedIndex];
     insertDone:
-        [_trackedTouch release];
         _trackedTouch = nil;
     }
     [super touchesCancelled:touches withEvent:event];
@@ -649,7 +685,6 @@
         }
         [self setHighlighted:NO forPositionAtIndex:_highlightedIndex];
     insertDone:
-        [_trackedTouch release];
         _trackedTouch = nil;
     }
     [super touchesEnded:touches withEvent:event];
@@ -755,9 +790,9 @@
                  targetNumberOfPositions, [_deferedDeleteIndexes count], [_deferedInsertIndexes count], [self numberOfPositions]];
             }
         }
-        [_deferedReloadIndexes release], _deferedReloadIndexes = nil;
-        [_deferedDeleteIndexes release], _deferedDeleteIndexes = nil;
-        [_deferedInsertIndexes release], _deferedInsertIndexes = nil;
+        _deferedReloadIndexes = nil;
+        _deferedDeleteIndexes = nil;
+        _deferedInsertIndexes = nil;
         _updateCount = 0;
         _lastSize = CGSizeZero;
         if (prevLastVisibleCell != NSNotFound && prevLastVisibleCell != _lastVisibleCell) {
@@ -985,7 +1020,6 @@
 		for (CWColumnTableViewCell* cell in _visibleCells) {
 			[self offerCellToReuseQueue:cell];
 		}
-		[_visibleCells release];
 		_visibleCells = nil;
 	}
 	if (_visibleCells) {
@@ -1035,7 +1069,7 @@
         if (cell.reuseIdentifier) {
 			NSMutableArray* cellsForIdentifier = [_resuseableCells objectForKey:cell.reuseIdentifier];
 			if (!cellsForIdentifier) {
-				cellsForIdentifier = [[[NSMutableArray alloc] initWithCapacity:self.numberOfColumns] autorelease];
+				cellsForIdentifier = [[NSMutableArray alloc] initWithCapacity:self.numberOfColumns];
 			}
             NSUInteger maxCells = ceilf(self.bounds.size.height / self.rowHeight + 1) * self.numberOfColumns;
 			if ([cellsForIdentifier count] < maxCells) {

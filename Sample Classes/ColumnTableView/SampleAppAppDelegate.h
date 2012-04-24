@@ -4,6 +4,7 @@
 //  Created by Fredrik Olsson 
 //
 //  Copyright (c) 2011, Jayway AB All rights reserved.
+//  Copyright (c) 2012, Fredrik Olsson All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are met:
@@ -36,8 +37,8 @@
     UIViewController* rootController;
 }
 
-@property(nonatomic, retain) IBOutlet UIWindow* window;
-@property(nonatomic, retain) IBOutlet UIViewController* rootController;
+@property(nonatomic, strong) IBOutlet UIWindow* window;
+@property(nonatomic, strong) IBOutlet UIViewController* rootController;
 
 @end
 

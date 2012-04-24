@@ -4,6 +4,7 @@
 //  Created by Fredrik Olsson 
 //
 //  Copyright (c) 2011, Jayway AB All rights reserved.
+//  Copyright (c) 2012, Fredrik Olsson All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are met:
@@ -53,7 +54,18 @@ UIRectCorner CWRectCornerFromRectEdge(CWRectEdge edge) {
     return corners;
 }
 
-@implementation CWTableViewCellBackgroundView
+@implementation CWTableViewCellBackgroundView {
+@private
+    UITableViewStyle _tableViewStyle;
+    UITableViewCellSeparatorStyle _separatorStyle;
+    UIEdgeInsets _inset;
+    CWRectEdge _freeEdges;
+    CGSize _roundedCornerRadii;
+    UIColor* _topGradientColor;
+    UIColor* _bottomGradientColor;
+    UIColor* _separatorColor;
+    UIColor* _etchedSeparatorColor;
+}
 
 #pragma mark --- Properties
 
@@ -89,8 +101,8 @@ UIRectCorner CWRectCornerFromRectEdge(CWRectEdge edge) {
 
 +(CWTableViewCellBackgroundView*)backgroundViewWithTableViewStyle:(UITableViewStyle)tableViewStyle separatorStyle:(UITableViewCellSeparatorStyle)separatorStyle;
 {
-	CWTableViewCellBackgroundView* view = [[[self alloc] initWithTableViewStyle:tableViewStyle 
-                                                                 separatorStyle:separatorStyle] autorelease];
+	CWTableViewCellBackgroundView* view = [[self alloc] initWithTableViewStyle:tableViewStyle 
+                                                                 separatorStyle:separatorStyle];
 	switch (tableViewStyle) {
 		case UITableViewStyleGrouped:
         	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
@@ -115,8 +127,8 @@ UIRectCorner CWRectCornerFromRectEdge(CWRectEdge edge) {
 
 +(CWTableViewCellBackgroundView*)highlightedBackgroundViewWithTableViewStyle:(UITableViewStyle)tableViewStyle separatorStyle:(UITableViewCellSeparatorStyle)separatorStyle;
 {
-	CWTableViewCellBackgroundView* view = [[[self alloc] initWithTableViewStyle:tableViewStyle 
-                                                                 separatorStyle:separatorStyle] autorelease];
+	CWTableViewCellBackgroundView* view = [[self alloc] initWithTableViewStyle:tableViewStyle 
+                                                                 separatorStyle:separatorStyle];
 	view.topGradientColor = [UIColor colorWithRed:0.02f green:0.55f blue:0.96f alpha:1.00f];
 	view.bottomGradientColor = [UIColor colorWithRed:0.00f green:0.36f blue:0.90f alpha:1.00f];
 	switch (tableViewStyle) {
@@ -163,7 +175,7 @@ UIRectCorner CWRectCornerFromRectEdge(CWRectEdge edge) {
     [path addClip];
     if (_bottomGradientColor) {
         CGColorSpaceRef space = CGColorSpaceCreateDeviceRGB();
-		CGGradientRef gradient = CGGradientCreateWithColors(space, (CFArrayRef)[NSArray arrayWithObjects:(id)_topGradientColor.CGColor, (id)_bottomGradientColor.CGColor, nil], (CGFloat[]){0.0f, 1.0f});
+		CGGradientRef gradient = CGGradientCreateWithColors(space, (__bridge CFArrayRef)[NSArray arrayWithObjects:(id)_topGradientColor.CGColor, (id)_bottomGradientColor.CGColor, nil], (CGFloat[]){0.0f, 1.0f});
         CGContextDrawLinearGradient(c, gradient, rect.origin, CGPointMake(rect.origin.x, rect.origin.y + rect.size.height), kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 		CGGradientRelease(gradient);
 		CGColorSpaceRelease(space);
@@ -192,14 +204,6 @@ UIRectCorner CWRectCornerFromRectEdge(CWRectEdge edge) {
     }
 }
 
-- (void)dealloc;
-{
-    [_topGradientColor release];
-    [_bottomGradientColor release];
-    [_separatorColor release];
-    [_etchedSeparatorColor release];
-    [super dealloc];
-}
 
 
 @end

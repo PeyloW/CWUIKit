@@ -4,6 +4,7 @@
 //  Created by Fredrik Olsson 
 //
 //  Copyright (c) 2011, Jayway AB All rights reserved.
+//  Copyright (c) 2012, Fredrik Olsson All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are met:
@@ -43,11 +44,6 @@
                     @"Johan:2010", @"Birtukan:2010", @"David:2010", nil];
 }
 
--(void)dealloc;
-{
-    [_columnTableView release];
-    [super dealloc];
-}
 
 -(BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation;
 {
@@ -67,7 +63,7 @@
 -(void)viewDidUnload;
 {
 	[super viewDidUnload];
-    [_columnTableView release], _columnTableView = nil;
+    _columnTableView = nil;
 }
 
 #pragma mark --- Action
@@ -102,6 +98,11 @@
 	[_columnTableView endUpdates];
 }
 
+-(IBAction)toggleRowBackgrounds:(id)sender;
+{
+    [_columnTableView reloadData];
+}
+
 #pragma mark --- CWColumnTableViewDataSource comformance
 
 -(NSInteger)numberOfPositionsInColumnTableView:(CWColumnTableView *)columnTableView;
@@ -114,8 +115,8 @@
 	static NSString* reuseID = @"reuseID";
     CWColumnTableViewCell* cell = [columnTableView dequeueReusableCellWithIdentifier:reuseID];
     if (!cell) {
-    	cell = [[[CWColumnTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1
-                                             reuseIdentifier:reuseID] autorelease];
+    	cell = [[CWColumnTableViewCell alloc] initWithStyle:UITableViewCellStyleValue1
+                                             reuseIdentifier:reuseID];
     }
     NSArray* item = [[modelObjects objectAtIndex:index] componentsSeparatedByString:@":"];
     cell.textLabel.text = [item objectAtIndex:0];
@@ -132,45 +133,44 @@
 -(void)columnTableView:(CWColumnTableView *)columnTableView movePositionAtIndex:(int)sourceIndex toIndex:(int)destIndex;
 {
     // Update model when column table view tells you a move has been completed
-	id item = [[modelObjects objectAtIndex:sourceIndex] retain];
+	id item = [modelObjects objectAtIndex:sourceIndex];
     [modelObjects removeObjectAtIndex:sourceIndex];
     [modelObjects insertObject:item atIndex:destIndex];
-    [item release];
 }
 
 #pragma mark --- CWColumnTableViewDelegate comformance
--(void)columnTableView:(CWColumnTableView *)columnTableView willDisplayCell:(CWColumnTableViewCell *)cell forPositionAtIndex:(NSInteger)index;
-{
-}
 
-//-(UIView*)columnTableView:(CWColumnTableView*)columnTableView backgroundViewForRowAtIndex:(NSInteger)index;
-//{
-//	UIColor* backgroundColor = nil;
-//	switch (index%5) {
-//		case 0:
-//			backgroundColor = [UIColor redColor];
-//			break;
-//		case 1:
-//			backgroundColor = [UIColor greenColor];
-//			break;
-//		case 2:
-//			backgroundColor = [UIColor blueColor];
-//			break;
-//		case 3:
-//			backgroundColor = [UIColor yellowColor];
-//			break;
-//		case 4:
-//			backgroundColor = [UIColor purpleColor];
-//			break;
-//
-//		default:
-//			backgroundColor = [UIColor whiteColor];
-//			break;
-//	}
-//	UIView* backgroundView = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
-//	backgroundView.backgroundColor = backgroundColor;
-//	return backgroundView;
-//}
+-(UIView*)columnTableView:(CWColumnTableView*)columnTableView backgroundViewForRowAtIndex:(NSInteger)index;
+{
+    if (_rowBackgroundsSwitch.on) {
+        UIColor* backgroundColor = nil;
+        switch (index%5) {
+            case 0:
+                backgroundColor = [UIColor redColor];
+                break;
+            case 1:
+                backgroundColor = [UIColor greenColor];
+                break;
+            case 2:
+                backgroundColor = [UIColor blueColor];
+                break;
+            case 3:
+                backgroundColor = [UIColor yellowColor];
+                break;
+            case 4:
+                backgroundColor = [UIColor purpleColor];
+                break;
+                
+            default:
+                backgroundColor = [UIColor whiteColor];
+                break;
+        }
+        UIView* backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+        backgroundView.backgroundColor = backgroundColor;
+        return backgroundView;
+    }
+    return nil;
+}
 
 -(void)columnTableView:(CWColumnTableView *)columnTableView didSelectPositionAtIndex:(int)index;
 {

@@ -4,6 +4,7 @@
 //  Created by Fredrik Olsson 
 //
 //  Copyright (c) 2011, Jayway AB All rights reserved.
+//  Copyright (c) 2012, Fredrik Olsson All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
 //  modification, are permitted provided that the following conditions are met:
@@ -48,28 +49,17 @@ UIRectCorner CWRectCornerFromRectEdge(CWRectEdge edge);
  * @discussion The default implementation is visually indistinguishable from the background views
  *             used by the default implementation of UITableView.
  */
-@interface CWTableViewCellBackgroundView : UIView {
-@private
-    UITableViewStyle _tableViewStyle;
-    UITableViewCellSeparatorStyle _separatorStyle;
-    UIEdgeInsets _inset;
-    CWRectEdge _freeEdges;
-    CGSize _roundedCornerRadii;
-    UIColor* _topGradientColor;
-    UIColor* _bottomGradientColor;
-    UIColor* _separatorColor;
-    UIColor* _etchedSeparatorColor;
-}
+@interface CWTableViewCellBackgroundView : UIView 
 
 @property (nonatomic, assign) UITableViewStyle tableViewStyle;
 @property (nonatomic, assign) UITableViewCellSeparatorStyle separatorStyle;
 @property (nonatomic, assign) UIEdgeInsets inset;
 @property (nonatomic, assign) CWRectEdge freeEdges;
 @property (nonatomic, assign) CGSize roundedCornerRadii;
-@property (nonatomic, retain) UIColor* topGradientColor;
-@property (nonatomic, retain) UIColor* bottomGradientColor;
-@property (nonatomic, retain) UIColor* separatorColor;
-@property (nonatomic, retain) UIColor* etchedSeparatorColor;
+@property (nonatomic, strong) UIColor* topGradientColor;
+@property (nonatomic, strong) UIColor* bottomGradientColor;
+@property (nonatomic, strong) UIColor* separatorColor;
+@property (nonatomic, strong) UIColor* etchedSeparatorColor;
 
 +(CWTableViewCellBackgroundView*)backgroundViewWithTableViewStyle:(UITableViewStyle)tableViewStyle separatorStyle:(UITableViewCellSeparatorStyle)separatorStyle;
 +(CWTableViewCellBackgroundView*)highlightedBackgroundViewWithTableViewStyle:(UITableViewStyle)tableViewStyle separatorStyle:(UITableViewCellSeparatorStyle)separatorStyle;
